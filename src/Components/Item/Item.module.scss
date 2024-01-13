@@ -1,0 +1,49 @@
+.item {
+    width: 100%;
+    border: 2px solid lightpink;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 5px;
+    cursor: grab;
+    background-color: #fcfcf9;
+  }
+
+  .itemText {
+    display: block;
+    font-weight: 700;
+  }
+
+  .itemDescription {
+    color: gray;
+  }
+
+  .iconWrapper {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .editIcon {
+    path {
+      stroke: black;
+    }
+  }
+
+  .deleteIcon {
+    path {
+      stroke: black;
+    }
+  }
+
+  .crossIcon {
+    width: 16px;
+    
+    path {
+      fill: red;
+    }
+  }
+
+  .okIcon {
+    stroke: green;
+  }
