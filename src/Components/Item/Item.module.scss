@@ -1,6 +1,6 @@
 .item {
     width: 100%;
-    border: 2px solid lightpink;
+    border: 2px solid #F4CE14;
     padding: 10px;
     border-radius: 6px;
     margin: 5px;
@@ -11,32 +11,44 @@
   .itemText {
     display: block;
     font-weight: 700;
+    padding: 6px;
+  }
+
+  input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
   }
 
   .itemDescription {
     color: gray;
+    padding: 6px;
   }
 
   .iconWrapper {
     display: flex;
+    height: 22px;
     justify-content: flex-end;
     gap: 10px;
     margin-top: 10px;
   }
 
   .editIcon {
+    cursor: default;
     path {
       stroke: black;
     }
   }
 
   .deleteIcon {
+    cursor: default;
     path {
       stroke: black;
     }
   }
 
   .crossIcon {
+    cursor: default;
     width: 16px;
     
     path {
@@ -45,5 +57,6 @@
   }
 
   .okIcon {
+    cursor: default;
     stroke: green;
   }

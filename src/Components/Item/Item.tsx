@@ -28,11 +28,7 @@ export const Item = ({ item, column, setCurrentColumn, setCurrentItem, setColumn
   }
 
   function dragLeaveHandler(e: DragEvent<HTMLDivElement>): void {
-    const target = e.target as HTMLDivElement;
-    target.style.boxShadow = 'none';
-  }
-
-  function dragEndHandler(e: DragEvent<HTMLDivElement>): void {
+    
     const target = e.target as HTMLDivElement;
     target.style.boxShadow = 'none';
   }
@@ -145,7 +141,7 @@ export const Item = ({ item, column, setCurrentColumn, setCurrentItem, setColumn
       draggable={true}
       onDragStart={(e) => dragStartHandler(e, column, item)}
       onDragLeave={(e) => dragLeaveHandler(e)}
-      onDragEnd={(e) => dragEndHandler(e)}
+      onDragEnd={(e) => dragLeaveHandler(e)}
       onDragOver={(e) => dragOverHandler(e)}
       onDrop={(e) => dropHandler(e)}
     >

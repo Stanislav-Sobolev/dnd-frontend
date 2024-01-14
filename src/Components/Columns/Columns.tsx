@@ -3,6 +3,7 @@ import { useState, useEffect, DragEvent } from 'react';
 import { Item } from '../Item/Item';
 import { IItem, IColumn } from '../../Interfaces';
 import styles from './Columns.module.scss';
+import { Plus } from '../Icons';
 
 
 type Props = { 
@@ -48,6 +49,25 @@ export const Columns = ({ columnsData }: Props) => {
     target.style.boxShadow = 'none';
   };
 
+function addCardHandler(column: IColumn): void {
+  setColumns((prevColumns) => {
+    if (!prevColumns) return prevColumns;
+
+    return prevColumns.map((col) =>
+      col.id === column.id
+        ? {
+            ...col,
+            items: [
+              ...col.items,
+              { id: Date.now(), text: 'text', description: 'description' },
+            ],
+          }
+        : col
+    );
+  });
+}
+
+
   return (
     <>
       {columns && columns.map(column => 
@@ -68,6 +88,12 @@ export const Columns = ({ columnsData }: Props) => {
               setColumns={setColumns}
             />
           ))}
+          <div 
+            className={styles.plusWrapper}
+            onClick={() => addCardHandler(column)}
+          >
+            <Plus className={styles.plusIcon}/>
+          </div>
         </div>
         )}
     </>
