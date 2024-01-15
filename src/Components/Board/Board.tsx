@@ -2,15 +2,17 @@ import { useState, useEffect, DragEvent } from 'react';
 
 import { Item } from '../Item/Item';
 import { IItem, IColumn } from '../../Interfaces';
-import styles from './Columns.module.scss';
+import styles from './Board.module.scss';
 import { Plus } from '../Icons';
+import { IBoard } from '../../Interfaces/IBoard';
 
+type Props = {
+  boardData: IBoard; 
+};
 
-type Props = { 
-  columnsData: IColumn[];
-  };
+export const Board = ({boardData}: Props) => {
+  const { columnsData } = boardData;
 
-export const Columns = ({ columnsData }: Props) => {
   const [columns, setColumns] = useState<IColumn[]| null>(null);
        
 
@@ -19,7 +21,7 @@ export const Columns = ({ columnsData }: Props) => {
 
   useEffect(() => {
     setColumns(columnsData);
-  }, []);
+  }, [columnsData]);
   
   function dragOverHandler(e: DragEvent<HTMLDivElement>): void {
     e.preventDefault();
@@ -69,7 +71,7 @@ function addCardHandler(column: IColumn): void {
 
 
   return (
-    <>
+    <div className={styles.columnWrapper}>
       {columns && columns.map(column => 
         <div 
           key={column.id}
@@ -96,6 +98,6 @@ function addCardHandler(column: IColumn): void {
           </div>
         </div>
         )}
-    </>
+    </div>
   );
 };

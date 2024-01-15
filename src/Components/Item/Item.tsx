@@ -97,7 +97,7 @@ export const Item = ({ item, column, setCurrentColumn, setCurrentItem, setColumn
     });
   }
 
-  const renderContent = isEditing ? (
+  const renderContent = () => isEditing ? (
     <>
       <input
         className={styles.itemText}
@@ -145,7 +145,7 @@ export const Item = ({ item, column, setCurrentColumn, setCurrentItem, setColumn
       onDragOver={(e) => dragOverHandler(e)}
       onDrop={(e) => dropHandler(e)}
     >
-      {renderContent}
+      {renderContent()}
     </div>
   );
 };
