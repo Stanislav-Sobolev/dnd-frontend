@@ -1,8 +1,8 @@
 import axios from "axios"
-import {IItem} from "../Interfaces/IItem"
+import {ICard} from "../Interfaces/ICard"
 import {IBoard} from "../Interfaces/IBoard"
 
-axios.defaults.baseURL = 'http://localhost:3000';
+axios.defaults.baseURL = 'http://localhost:4000';
 
 
 export const getBoardById = async (boardId: string): Promise<IBoard> => {
@@ -11,7 +11,6 @@ export const getBoardById = async (boardId: string): Promise<IBoard> => {
     
     return boardData;
 };
-
 
 export const createBoard = async (boardData: IBoard): Promise<IBoard> => {
     const res = await axios.post('/board', boardData);
@@ -34,23 +33,23 @@ export const deleteBoard = async (boardId: string): Promise<IBoard> => {
     return boardData;
 };
 
-export const createCard = async (boardId: string, columnId: number, cardData: IItem): Promise<IItem> => {
+export const createCard = async (boardId: string, columnId: number, cardData: ICard): Promise<ICard> => {
     const res = await axios.post(`/card/${boardId}/${columnId}`, cardData);
-    const boardData: IItem = res.data;
+    const boardData: ICard = res.data;
     
     return boardData;
 };
 
-export const updateCard = async (boardId: string, columnId: number, cardId: number, updatedData: IItem): Promise<IItem> => {
+export const updateCard = async (boardId: string, columnId: number, cardId: number, updatedData: ICard): Promise<ICard> => {
     const res = await axios.put(`/card/${boardId}/${columnId}/${cardId}`, updatedData);
-    const boardData: IItem = res.data;
+    const boardData: ICard = res.data;
     
     return boardData;
 };
 
-export const deleteCard = async (boardId: string, columnId: number, cardId: number): Promise<IItem> => {
+export const deleteCard = async (boardId: string, columnId: number, cardId: number): Promise<ICard> => {
     const res = await axios.delete(`/card/${boardId}/${columnId}/${cardId}`);
-    const boardData: IItem = res.data;
+    const boardData: ICard = res.data;
     
     return boardData;
 };

@@ -1,38 +1,40 @@
 import { useState, useEffect, DragEvent } from 'react';
 
-import { Item } from '../Item/Item';
-import { IItem, IColumn } from '../../Interfaces';
+import { Card } from '../Card/Card';
+import cardEmptyTemplate from '../../assets/json/cardEmptyTemplate.json';
+import { ICard, IColumn } from '../../Interfaces';
 import styles from './Board.module.scss';
 import { Plus } from '../Icons';
 import { IBoard } from '../../Interfaces/IBoard';
+import { createCard } from '../../helpers/fetchers';
 
 type Props = {
   boardData: IBoard; 
+  nameBoard: string;
+  fetchBoard: () => Promise<void>;
 };
 
-export const Board = ({boardData}: Props) => {
-  const { columnsData } = boardData;
+export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
+  const { id: boardId, columnsData } = boardData;
 
   const [columns, setColumns] = useState<IColumn[]| null>(null);
-       
-
   const [currentColumn, setCurrentColumn] = useState<IColumn | null>(null);
-  const [currentItem, setCurrentItem] = useState<IItem | null>(null);
+  const [currentCard, setCurrentCard] = useState<ICard | null>(null);
 
   useEffect(() => {
     setColumns(columnsData);
   }, [columnsData]);
   
-  function dragOverHandler(e: DragEvent<HTMLDivElement>): void {
+  const dragOverHandler = (e: DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
   };
 
-  function dropCardHandler(e: DragEvent<HTMLDivElement>, column: IColumn): void {
+  const dropCardHandler = (e: DragEvent<HTMLDivElement>, column: IColumn): void => {
     e.preventDefault();  
 
-    if (currentItem && currentColumn && columns) {
-      column.items.push(currentItem);
-      const currentIndex = currentColumn.items.indexOf(currentItem);
+    if (currentCard && currentColumn && columns) {
+      column.items.push(currentCard);
+      const currentIndex = currentColumn.items.indexOf(currentCard);
       currentColumn.items.splice(currentIndex, 1);
 
       setColumns(columns.map(el =>{
@@ -51,53 +53,64 @@ export const Board = ({boardData}: Props) => {
     target.style.boxShadow = 'none';
   };
 
-function addCardHandler(column: IColumn): void {
-  setColumns((prevColumns) => {
-    if (!prevColumns) return prevColumns;
+  const addCardHandler = async (column: IColumn): Promise<void> => {
 
-    return prevColumns.map((col) =>
-      col.id === column.id
-        ? {
-            ...col,
-            items: [
-              ...col.items,
-              { id: Date.now(), text: 'text', description: 'description' },
-            ],
-          }
-        : col
-    );
-  });
-}
+    await createCard(boardId, column.id, cardEmptyTemplate);
+    await fetchBoard();
 
+    // setColumns((prevColumns) => {
+    //   if (!prevColumns) return prevColumns;
+
+    //   return prevColumns.map((col) =>
+    //     col.id === column.id
+    //       ? {
+    //           ...col,
+    //           items: [
+    //             ...col.items,
+    //             { id: Date.now(), text: 'text', description: 'description' },
+    //           ],
+    //         }
+    //       : col
+    //   );
+    // });
+  }
 
   return (
-    <div className={styles.columnWrapper}>
-      {columns && columns.map(column => 
-        <div 
-          key={column.id}
-          className={styles.column}
-          onDragOver={(e) => dragOverHandler(e)}
-          onDrop={(e) => dropCardHandler(e, column)}
-        >
-          <div className={styles.columnTitle}>{column.title}</div>
-          {column.items.map(item => (
-            <Item 
-              key={item.id}
-              item={item} 
-              column={column}
-              setCurrentColumn={setCurrentColumn}
-              setCurrentItem={setCurrentItem}
-              setColumns={setColumns}
-            />
-          ))}
-          <div 
-            className={styles.plusWrapper}
-            onClick={() => addCardHandler(column)}
-          >
-            <Plus className={styles.plusIcon}/>
+    <div className={styles.board}>
+      <h1 className={styles.boardName}>{nameBoard}</h1>
+      <div className={styles.columns}>
+        {columns && columns.map(column => 
+          <div className={styles.columnWrapper}>
+            <h2 className={styles.columnTitle}>{column.title}</h2>
+            <div 
+              key={column.id}
+              className={styles.column}
+              onDragOver={(e) => dragOverHandler(e)}
+              onDrop={(e) => dropCardHandler(e, column)}
+            >
+              
+              {column.items.map(item => (
+                <Card 
+                  key={item.id}
+                  card={item} 
+                  column={column}
+                  boardId={boardId}
+                  fetchBoard={fetchBoard}
+                  setCurrentColumn={setCurrentColumn}
+                  setCurrentCard={setCurrentCard}
+                  setColumns={setColumns}
+                />
+              ))}
+              <div 
+                className={styles.plusWrapper}
+                onClick={() => addCardHandler(column)}
+              >
+                <Plus className={styles.plusIcon}/>
+              </div>
+            </div>
           </div>
-        </div>
         )}
+      </div>
     </div>
   );
 };

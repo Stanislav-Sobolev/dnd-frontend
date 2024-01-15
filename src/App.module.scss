@@ -7,7 +7,14 @@
   flex-direction: column;
 }
 
+.createWrapper {
+  display: flex;
+  margin-top: 16px;
+  gap: 8px;
+}
+
 .searchPanel {
+  display: flex;
 padding: 10px;
 }
 
@@ -25,7 +32,11 @@ padding: 10px;
   }
 }
 
-.btn {
+.btn,
+.btnCreate,
+.btnEdit,
+.btnDelete,
+.btnDisable {
   padding: 10px 15px;
   font-size: 16px;
   background-color: #007bff;
@@ -35,6 +46,51 @@ padding: 10px;
   cursor: pointer;
 
   &:hover {
-    background-color: #0056b3; /* измените цвет при наведении по вашему вкусу */
+    background-color: #0056b3;
   }
+}
+
+.btnDisable {
+  color: grey;
+  background-color: #ccc;
+  &:hover {
+    background-color: #ccc;
+  }
+}
+
+.btnCreate,
+.btnEdit,
+.btnDelete {
+  background-color: #69b2ff;
+}
+
+.deleteText {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  height: 40px;
+  color: red;
+}
+
+.iconWrapper {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+  align-items: center;
+}
+
+.crossIcon {
+  display: flex;
+  cursor: default;
+  width: 16px;
+  
+  path {
+    fill: red;
+  }
+}
+
+.okIcon {
+  display: flex;
+  cursor: default;
+  stroke: green;
 }

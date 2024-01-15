@@ -1,76 +1,228 @@
-import { useState, useEffect } from 'react';
-import styles from './App.module.scss';
+import { useState, useEffect, ChangeEvent } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Board } from './Components/Board/Board';
 import { IBoard } from './Interfaces/IBoard';
+import boardEmptyTemplate from './assets/json/boardEmptyTemplate.json';
+import { createBoard, deleteBoard, getBoardById, updateBoardName } from './helpers/fetchers';
 
-const columns = [
-  { id: 1, title: 'To Do', items: [{id: 1, text: 'ToDo 1',  description: 'desk 1'}, {id: 2, text: 'ToDo 2',  description: 'desk 2'}]},
-  { id: 2, title: 'In Progress', items: [{id: 3, text: 'InProgress 1',  description: 'desk 1'}, {id: 4, text: 'InProgress 2',  description: 'desk 2'}]},
-  { id: 3, title: 'Done', items: [{id: 5, text: 'Done 1',  description: 'desk 1'}, {id: 6, text: 'Done 2',  description: 'desk 2'}]}
-];
-
-const columns2 = [
-  { id: 4, title: 'To Do', items: [{id: 7, text: '2 ToDo 1',  description: '2esk 1'}, {id: 8, text: '2ToDo 2',  description: '2desk 2'}]},
-  { id: 5, title: 'In Progress', items: [{id: 9, text: '2 InProgress 1',  description: '2desk 1'}, {id: 10, text: '2InProgress 2',  description: '2desk 2'}]},
-  { id: 6, title: 'Done', items: [{id: 11, text: '2 Done 1',  description: '2desk 1'}, {id: 12, text: '2Done 2',  description: '2desk 2'}]}
-];
-
-const boardsData = [
-  { id: 1, name: 'Project A', columnsData: columns },
-  { id: 2, name: 'Project B', columnsData: columns2 },
-];
+import styles from './App.module.scss';
+import { Cross, Ok } from './Components/Icons';
 
 export const App = () => {
-  const [searchTerm, setSearchTerm] = useState('Project A');
-  const [filteredBoard, setFilteredBoard] = useState<IBoard>(boardsData[0]);
-
-//   // Импортируем библиотеку для хеширования
-// import { createHash } from 'crypto';
-
-// // Создаем функцию, которая хеширует идентификатор
-// const hashId = (id) => {
-//   const hash = createHash('sha256');
-//   hash.update(String(id));
-//   return hash.digest('hex');
-// };
-
-// // Использование
-// const originalId = 123;
-// const hashedId = hashId(originalId);
-// console.log(hashedId);
-
+  const [searchTerm, setSearchTerm] = useState<string>('1');
+  const [filteredBoard, setFilteredBoard] = useState<IBoard | null>(null);
+  const [nameBoard, setNameBoard] = useState<string>('');
+  const [idBoard, setIdBoard] = useState<string>('');
+  
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  
+  const [idBoardCreating, setIdBoardCreating] = useState<string>('');
+  const [nameBoardCreating, setNameBoardCreating] = useState<string>('');
+  const [changedBoardName, setChangedBoardName] = useState<string>('');
+  const [actualInputValue, setActualInputValue] = useState<string>('');
+  const [actualInputPlaceholder, setActualInputPlaceholder] = useState<string>('');
+  
 
   useEffect(() => {
-    searchBoard();
+    fetchBoard();
   }, []);
 
-  const searchBoard = () => {
-    const filteredResults = boardsData.find(
-      (board) => board.name.toLowerCase() === searchTerm.toLowerCase()
-    );
-    if (filteredResults) {
-      setFilteredBoard(filteredResults);
+  useEffect(() => {
+    if (isCreating) {
+      setActualInputValue(nameBoardCreating);
+      setActualInputPlaceholder("New board name");
+    }
+
+    if (isEditing) {
+      setActualInputValue(changedBoardName);
+      setActualInputPlaceholder("Change board name");
+    }
+
+    if (!isCreating && !isEditing) {
+      setActualInputValue(searchTerm);
+      setActualInputPlaceholder("Search boards...");
+    }
+  }, [isCreating, isEditing, changedBoardName, nameBoardCreating, searchTerm]);
+
+  const fetchBoard = async (): Promise<void> => {
+    try {
+      const fetchedBoard = await getBoardById(searchTerm);
+    
+      if (fetchedBoard) {
+        setFilteredBoard(fetchedBoard);
+        setNameBoard(fetchedBoard.name);
+        setChangedBoardName(fetchedBoard.name);
+        setIdBoard(fetchedBoard.id);
+      }
+    } catch (error: any) {
+      toast.error(error.response.data.message);
     }
   }
 
+  const handleBoardBtnClick = (key: string) => {
+    switch (key) {
+      case 'isCreating':
+        setIsCreating(!isCreating);
+        setIsEditing(false);
+        setIsDeleting(false);
+        break;
+      case 'isEditing':
+        setIsEditing(!isEditing);
+        setIsCreating(false);
+        setIsDeleting(false);
+      break;
+      case 'isDeleting':
+        setIsDeleting(!isDeleting);
+        setIsCreating(false);
+        setIsEditing(false);
+      break;
+    
+      default:
+        break;
+    }
+  }
+
+  const submitHandler = async (): Promise<void> => {
+    try {
+      if (isCreating) {
+        await createBoard({...boardEmptyTemplate, id: idBoardCreating, name: nameBoardCreating});
+        
+        setIsCreating(false);
+      }
+
+      if (isEditing && filteredBoard) {
+        await updateBoardName(filteredBoard.id, changedBoardName);
+        
+        await fetchBoard();
+        setIsEditing(false);
+      }
+
+      if (isDeleting) {
+        await deleteBoard(idBoard);
+        setIsDeleting(false);
+        setFilteredBoard(null);
+      }
+
+    } catch (error: any) {
+      toast.error(error.response?.data?.message);
+    }
+  };
+  
+
+  const cancelHandler = (): void => {
+    if (isCreating) {      
+      setIsCreating(false);
+    }
+
+    if (isEditing) {      
+      setIsEditing(false);
+    }
+
+    if (isDeleting) {      
+      setIsDeleting(false);      
+    }    
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    if (isCreating) {
+      setNameBoardCreating(e.target.value);
+    }
+
+    if (isEditing) {
+      setChangedBoardName(e.target.value);
+    }
+
+    if (!isCreating && !isEditing && !isEditing) {
+      setSearchTerm(e.target.value)
+    }
+  }
+
+  const renderButtons = () => (
+    <div className={styles.createWrapper}>
+      <button 
+        className={isCreating ? styles.btnDisable : styles.btnCreate}
+        onClick={() => handleBoardBtnClick('isCreating')}
+      >
+        Create
+      </button>
+      <button 
+        className={isEditing ? styles.btnDisable : styles.btnEdit}
+        onClick={() => handleBoardBtnClick('isEditing')}
+      >
+        Edit
+      </button>
+      <button 
+        className={isDeleting ? styles.btnDisable : styles.btnDelete}
+        onClick={() => handleBoardBtnClick('isDeleting')}
+      >
+        Delete
+      </button>
+    </div>
+  );
+
+  const renderIcons = () => !isCreating && !isEditing && !isDeleting  ? 
+    (
+      <button 
+      className={styles.btn}
+      onClick={() => fetchBoard()}
+    >
+      Load
+    </button>
+    ) : (
+      <div className={styles.iconWrapper}>
+        <div onClick={cancelHandler}>
+          <Cross className={styles.crossIcon}/>
+        </div>
+        <div onClick={submitHandler}>
+          <Ok className={styles.okIcon} />
+        </div>
+      </div>
+  );
+
+  const renderInput = () => (
+    <>
+    {isDeleting ?
+      (<p className={styles.deleteText}>
+          Do you want to delete current Board?
+        </p>
+      ) : (<input
+        className={styles.input}
+        type="text"
+        placeholder={actualInputPlaceholder}
+        value={actualInputValue}
+        onChange={handleInputChange}
+      />)
+    }
+    
+    {isCreating &&
+      <input
+        className={styles.input}
+        type="text"
+        placeholder="ID Board"
+        value={idBoardCreating}
+        onChange={(e) => setIdBoardCreating(e.target.value)}
+      />
+    }
+    </>
+  );
+ 
   return (
     <div className={styles.app}>
+      <ToastContainer />
+      {renderButtons()}
       <div className={styles.searchPanel}>
-        <input
-          className={styles.input}
-          type="text"
-          placeholder="Search boards..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button 
-          className={styles.btn}
-          onClick={() => searchBoard()}
-        >
-          Load
-          </button>
+        {renderInput()}
+        {renderIcons()}
       </div>
-      <Board boardData={filteredBoard} />
+      { filteredBoard && 
+      <Board 
+        boardData={filteredBoard}
+        nameBoard={nameBoard}
+        fetchBoard={fetchBoard}
+      />}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-.item {
+.card {
     width: 100%;
     border: 2px solid #c6cdff  ;
     padding: 10px;
@@ -8,29 +8,34 @@
     background-color: #fcfcf9;
   }
 
-  .itemText {
+  .cardText,
+  .cardTextInput {
     display: block;
+    width: 246px;
+    font-size: 16px;
     font-weight: 700;
     padding: 6px;
   }
 
-  input {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-
-  .itemDescription {
+  .cardDescription,
+  .cardDescriptionInput {
+    display: block;
+    width: 246px;
     color: gray;
     padding: 6px;
+  }
+
+  .cardTextInput,
+  .cardDescriptionInput {
+    height: 33px;
   }
 
   .iconWrapper {
     display: flex;
     height: 22px;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   .editIcon {

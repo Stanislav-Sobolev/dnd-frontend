@@ -1,2 +1,2 @@
-export * from "./IItem";
+export * from "./ICard";
 export * from "./IColumn";
