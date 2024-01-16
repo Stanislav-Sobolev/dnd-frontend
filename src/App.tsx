@@ -28,6 +28,7 @@ export const App = () => {
 
   useEffect(() => {
     fetchBoard();
+  // eslint-disable-next-line
   }, []);
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import axios from "axios"
 import {ICard} from "../Interfaces/ICard"
 import {IBoard} from "../Interfaces/IBoard"
 
-axios.defaults.baseURL = 'http://localhost:4000';
+axios.defaults.baseURL = 'https://dnd-te37.onrender.com';
 
 
 export const getBoardById = async (boardId: string): Promise<IBoard> => {
@@ -42,6 +42,19 @@ export const createCard = async (boardId: string, columnId: number, cardData: IC
 
 export const updateCard = async (boardId: string, columnId: number, cardId: number, updatedData: ICard): Promise<ICard> => {
     const res = await axios.put(`/card/${boardId}/${columnId}/${cardId}`, updatedData);
+    const boardData: ICard = res.data;
+    
+    return boardData;
+};
+
+export const dndCard = async (
+    boardId: string, 
+    columnId: number, 
+    cardId: number,
+    toColumnId: number, 
+    toCardIndexId: number
+    ): Promise<ICard> => {
+    const res = await axios.patch(`/card/${boardId}/${columnId}/${cardId}/${toColumnId}/${toCardIndexId}`);
     const boardData: ICard = res.data;
     
     return boardData;

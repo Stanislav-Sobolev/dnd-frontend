@@ -1,11 +1,11 @@
 .card {
     width: 100%;
-    border: 2px solid #c6cdff  ;
+    border: 2px solid var(--accentSecondary);
     padding: 10px;
     border-radius: 6px;
     margin: 5px;
     cursor: grab;
-    background-color: #fcfcf9;
+    background-color: var(--background);
   }
 
   .cardText,
@@ -21,7 +21,7 @@
   .cardDescriptionInput {
     display: block;
     width: 246px;
-    color: gray;
+    color: var(--darkText);
     padding: 6px;
   }
 
@@ -41,14 +41,14 @@
   .editIcon {
     cursor: default;
     path {
-      stroke: black;
+      stroke: var(--dark);
     }
   }
 
   .deleteIcon {
     cursor: default;
     path {
-      stroke: black;
+      stroke: var(--dark);
     }
   }
 
@@ -57,11 +57,11 @@
     width: 16px;
     
     path {
-      fill: red;
+      fill: var(--errorColor);
     }
   }
 
   .okIcon {
     cursor: default;
-    stroke: green;
+    stroke: var(--successColor);
   }

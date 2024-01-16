@@ -21,14 +21,15 @@ padding: 10px;
 .input {
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--text);
   border-radius: 5px;
   margin-right: 10px;
   width: 200px;
+  transition: border 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #0056b3;
+    border-color: var(--accent);
   }
 }
 
@@ -39,29 +40,36 @@ padding: 10px;
 .btnDisable {
   padding: 10px 15px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: var(--accent);
+  transition: background-color 0.3s ease;
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: var(--accentThird);
   }
 }
 
 .btnDisable {
-  color: grey;
-  background-color: #ccc;
+  color: var(--disabled);
+  background-color: var(--background);
   &:hover {
-    background-color: #ccc;
+    background-color: var(--input);
   }
 }
 
 .btnCreate,
 .btnEdit,
 .btnDelete {
-  background-color: #69b2ff;
+  background-color: var(--primary);
+  color: var(--darkText);
+  border: 1px solid var(--input);
+
+  &:hover {
+    background-color: var(--background);
+  }
 }
 
 .deleteText {
@@ -69,7 +77,7 @@ padding: 10px;
   align-items: center;
   font-size: 16px;
   height: 40px;
-  color: red;
+  color: var(--errorColor);
 }
 
 .iconWrapper {
@@ -85,12 +93,12 @@ padding: 10px;
   width: 16px;
   
   path {
-    fill: red;
+    fill: var(--errorColor);
   }
 }
 
 .okIcon {
   display: flex;
   cursor: default;
-  stroke: green;
+  stroke: var(--successColor);
 }

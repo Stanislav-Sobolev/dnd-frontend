@@ -6,7 +6,7 @@ import { ICard, IColumn } from '../../Interfaces';
 import styles from './Board.module.scss';
 import { Plus } from '../Icons';
 import { IBoard } from '../../Interfaces/IBoard';
-import { createCard } from '../../helpers/fetchers';
+import { createCard, dndCard } from '../../helpers/fetchers';
 
 type Props = {
   boardData: IBoard; 
@@ -20,6 +20,7 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
   const [columns, setColumns] = useState<IColumn[]| null>(null);
   const [currentColumn, setCurrentColumn] = useState<IColumn | null>(null);
   const [currentCard, setCurrentCard] = useState<ICard | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<ICard | null>(null);
 
   useEffect(() => {
     setColumns(columnsData);
@@ -29,50 +30,27 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
     e.preventDefault();
   };
 
-  const dropCardHandler = (e: DragEvent<HTMLDivElement>, column: IColumn): void => {
-    e.preventDefault();  
-
-    if (currentCard && currentColumn && columns) {
-      column.items.push(currentCard);
+  const dropCardHandler = async (e: DragEvent<HTMLDivElement>, column: IColumn): Promise<void> => {
+    e.preventDefault();
+    
+    if (currentCard && currentColumn && columns && hoveredCard) {
       const currentIndex = currentColumn.items.indexOf(currentCard);
       currentColumn.items.splice(currentIndex, 1);
 
-      setColumns(columns.map(el =>{
-        if (el.id === column.id) {
-          return column
-        }
-        if (el.id === currentColumn.id) {
-          return currentColumn
-        }
-        return el;
-
-      }))
+      const dropIndex = column.items.indexOf(hoveredCard);
+      column.items.splice(dropIndex + 1, 0, currentCard);
       
+      await dndCard(boardId, currentColumn.id, currentCard.id, column.id, dropIndex + 1);
+      await fetchBoard();
     }
+
     const target = e.target as HTMLDivElement;
     target.style.boxShadow = 'none';
   };
 
   const addCardHandler = async (column: IColumn): Promise<void> => {
-
     await createCard(boardId, column.id, cardEmptyTemplate);
     await fetchBoard();
-
-    // setColumns((prevColumns) => {
-    //   if (!prevColumns) return prevColumns;
-
-    //   return prevColumns.map((col) =>
-    //     col.id === column.id
-    //       ? {
-    //           ...col,
-    //           items: [
-    //             ...col.items,
-    //             { id: Date.now(), text: 'text', description: 'description' },
-    //           ],
-    //         }
-    //       : col
-    //   );
-    // });
   }
 
   return (
@@ -80,7 +58,7 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
       <h1 className={styles.boardName}>{nameBoard}</h1>
       <div className={styles.columns}>
         {columns && columns.map(column => 
-          <div className={styles.columnWrapper}>
+          <div key={column.id} className={styles.columnWrapper}>
             <h2 className={styles.columnTitle}>{column.title}</h2>
             <div 
               key={column.id}
@@ -98,6 +76,7 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
                   fetchBoard={fetchBoard}
                   setCurrentColumn={setCurrentColumn}
                   setCurrentCard={setCurrentCard}
+                  setHoveredCard={setHoveredCard}
                   setColumns={setColumns}
                 />
               ))}

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dispatch, SetStateAction, DragEvent } from 'react';
 
 import { ICard, IColumn } from '../../Interfaces';
 import { Edit, Delete, Ok, Cross } from '../Icons';
+import { deleteCard, updateCard } from '../../helpers/fetchers';
 
 import styles from './Card.module.scss';
-import { deleteCard, updateCard } from '../../helpers/fetchers';
 
 type Props = {
   card: ICard;
@@ -14,10 +14,11 @@ type Props = {
   fetchBoard: () => Promise<void>;
   setCurrentColumn: Dispatch<SetStateAction<IColumn | null>>;
   setCurrentCard: Dispatch<SetStateAction<ICard | null>>;
+  setHoveredCard: Dispatch<SetStateAction<ICard | null>>;
   setColumns: Dispatch<SetStateAction<IColumn[] | null>>;
 };
 
-export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setCurrentCard, setColumns }: Props) => {
+export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setCurrentCard, setHoveredCard, setColumns }: Props) => {
   const { id: cardId } = card;
   const { id: columnId } = column;
 
@@ -42,18 +43,13 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
     const target = e.target as HTMLDivElement;
 
     if (target.className === styles.card) {
+      setHoveredCard(card);
       target.style.boxShadow = '0 4px 3px gray';
     }
   }
 
   const dropHandler = (e: DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
-
-
-
-
-    
-
     
     const target = e.target as HTMLDivElement;
     target.style.boxShadow = 'none';
@@ -124,7 +120,7 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
   return (
     <div
       className={styles.card}
-      draggable={true}
+      draggable={!isEditing}
       onDragStart={(e) => dragStartHandler(e, column, card)}
       onDragLeave={(e) => dragLeaveHandler(e)}
       onDragEnd={(e) => dragLeaveHandler(e)}
