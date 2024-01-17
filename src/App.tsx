@@ -59,7 +59,7 @@ export const App = () => {
         setIdBoard(fetchedBoard.id);
       }
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message);
     }
   }
 
