@@ -61,7 +61,12 @@ export const App = () => {
     } catch (error: any) {
       toast.error(error.response?.data?.message);
     }
-  }
+  };
+
+  const failFetchCallback = (): void => {
+    toast.error('Sorry, try again');
+    fetchBoard();
+  };
 
   const handleBoardBtnClick = (key: string) => {
     switch (key) {
@@ -84,7 +89,7 @@ export const App = () => {
       default:
         break;
     }
-  }
+  };
 
   const submitHandler = async (): Promise<void> => {
     try {
@@ -95,16 +100,17 @@ export const App = () => {
       }
 
       if (isEditing && filteredBoard) {
-        await updateBoardName(filteredBoard.id, changedBoardName);
+        setNameBoard(changedBoardName);
         
-        await fetchBoard();
+        updateBoardName(filteredBoard.id, changedBoardName, failFetchCallback);
+        
         setIsEditing(false);
       }
 
       if (isDeleting) {
-        await deleteBoard(idBoard);
-        setIsDeleting(false);
         setFilteredBoard(null);
+        deleteBoard(idBoard, failFetchCallback);
+        setIsDeleting(false);        
       }
 
     } catch (error: any) {
@@ -221,8 +227,9 @@ export const App = () => {
       { filteredBoard && 
       <Board 
         boardData={filteredBoard}
+        setBoardData={setFilteredBoard}
         nameBoard={nameBoard}
-        fetchBoard={fetchBoard}
+        failFetchCallback={failFetchCallback}
       />}
     </div>
   );

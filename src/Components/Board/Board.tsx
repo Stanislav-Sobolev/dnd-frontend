@@ -1,4 +1,4 @@
-import { useState, useEffect, DragEvent } from 'react';
+import { useState, useEffect, DragEvent, Dispatch, SetStateAction } from 'react';
 
 import { Card } from '../Card/Card';
 import cardEmptyTemplate from '../../assets/json/cardEmptyTemplate.json';
@@ -11,10 +11,11 @@ import { createCard, dndCard } from '../../helpers/fetchers';
 type Props = {
   boardData: IBoard; 
   nameBoard: string;
-  fetchBoard: () => Promise<void>;
+  failFetchCallback: () => void;
+  setBoardData: Dispatch<SetStateAction<IBoard | null>>;
 };
 
-export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
+export const Board = ({boardData, nameBoard, failFetchCallback, setBoardData}: Props) => {
   const { id: boardId, columnsData } = boardData;
 
   const [columns, setColumns] = useState<IColumn[]| null>(null);
@@ -34,14 +35,28 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
     e.preventDefault();
     
     if (currentCard && currentColumn && columns && hoveredCard) {
-      const currentIndex = currentColumn.items.indexOf(currentCard);
-      currentColumn.items.splice(currentIndex, 1);
-
       const dropIndex = column.items.indexOf(hoveredCard);
-      column.items.splice(dropIndex + 1, 0, currentCard);
       
-      await dndCard(boardId, currentColumn.id, currentCard.id, column.id, dropIndex + 1);
-      await fetchBoard();
+      setBoardData((board: IBoard | null) => {
+        if (board) {
+          
+          const columnFrom: IColumn | undefined = board.columnsData.find((col) => col.id === currentColumn.id);
+          const columnTo: IColumn | undefined = board.columnsData.find((col) => col.id === column.id);
+          
+          if (columnFrom && columnTo) {
+            const currentCardIndex = columnFrom.items.indexOf(currentCard);
+            columnFrom.items.splice(currentCardIndex, 1);
+
+            columnTo.items.splice(dropIndex + 1, 0, currentCard);
+            
+            return {...board};
+          }
+        }
+        return board;
+      });
+
+      
+      dndCard(boardId, currentColumn.id, currentCard.id, column.id, dropIndex + 1, failFetchCallback);
     }
 
     const target = e.target as HTMLDivElement;
@@ -49,8 +64,23 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
   };
 
   const addCardHandler = async (column: IColumn): Promise<void> => {
-    await createCard(boardId, column.id, cardEmptyTemplate);
-    await fetchBoard();
+    const emptyCard: ICard = { ...cardEmptyTemplate, id: Date.now() };
+
+    setBoardData((board: IBoard | null) => {
+      if (board) {
+        
+        const foundColumn: IColumn | undefined = board.columnsData.find((col) => col.id === column.id);
+        
+        if (foundColumn) {
+          foundColumn.items.push(emptyCard);
+          
+          return {...board};
+        }
+      }
+      return board;
+    });
+
+    createCard(boardId, column.id, emptyCard, failFetchCallback);
   }
 
   return (
@@ -73,11 +103,12 @@ export const Board = ({boardData, nameBoard, fetchBoard}: Props) => {
                   card={item} 
                   column={column}
                   boardId={boardId}
-                  fetchBoard={fetchBoard}
+                  failFetchCallback={failFetchCallback}
                   setCurrentColumn={setCurrentColumn}
                   setCurrentCard={setCurrentCard}
                   setHoveredCard={setHoveredCard}
                   setColumns={setColumns}
+                  setBoardData={setBoardData}
                 />
               ))}
               <div 

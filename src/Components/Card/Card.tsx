@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dispatch, SetStateAction, DragEvent } from 'react';
 
-import { ICard, IColumn } from '../../Interfaces';
+import { ICard, IColumn, IBoard } from '../../Interfaces';
 import { Edit, Delete, Ok, Cross } from '../Icons';
 import { deleteCard, updateCard } from '../../helpers/fetchers';
 
@@ -11,14 +11,15 @@ type Props = {
   card: ICard;
   column: IColumn;
   boardId: string;
-  fetchBoard: () => Promise<void>;
+  failFetchCallback: () => void;
   setCurrentColumn: Dispatch<SetStateAction<IColumn | null>>;
   setCurrentCard: Dispatch<SetStateAction<ICard | null>>;
   setHoveredCard: Dispatch<SetStateAction<ICard | null>>;
   setColumns: Dispatch<SetStateAction<IColumn[] | null>>;
+  setBoardData: Dispatch<SetStateAction<IBoard | null>>;
 };
 
-export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setCurrentCard, setHoveredCard, setColumns }: Props) => {
+export const Card = ({ card, column, boardId, failFetchCallback, setCurrentColumn, setCurrentCard, setHoveredCard, setColumns, setBoardData }: Props) => {
   const { id: cardId } = card;
   const { id: columnId } = column;
 
@@ -28,6 +29,9 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
   const [originalDescription, setOriginalDescription] = useState<string>(card.description);
   const [isEditing, setEditing] = useState<boolean>(false);
 
+  const classNamesToStyle = [styles.card, styles.cardDescription, styles.cardText, styles.iconWrapper, styles.editIcon, styles.deleteIcon];
+  const elementById = document.getElementById(`${cardId}`);
+
   const dragStartHandler = (e: DragEvent<HTMLDivElement>, column: IColumn, itcardem: ICard): void => {
     setCurrentColumn(column);
     setCurrentCard(card);
@@ -35,24 +39,30 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
 
   const dragLeaveHandler = (e: DragEvent<HTMLDivElement>): void => {
     const target = e.target as HTMLDivElement;
-    target.style.boxShadow = 'none';
-  }
+    
+    if (classNamesToStyle.includes(target.className) && elementById) {
+      elementById.style.boxShadow = 'none';
+    }
+  };
+  
 
   const dragOverHandler = (e: DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
     const target = e.target as HTMLDivElement;
-
-    if (target.className === styles.card) {
+    
+    if (classNamesToStyle.includes(target.className) && elementById) {
       setHoveredCard(card);
-      target.style.boxShadow = '0 4px 3px gray';
+      elementById.style.boxShadow = '0 5px 5px rgba(0, 0, 0, 0.2)';
     }
   }
 
   const dropHandler = (e: DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
-    
     const target = e.target as HTMLDivElement;
-    target.style.boxShadow = 'none';
+
+    if (classNamesToStyle.includes(target.className) && elementById) {
+      elementById.style.boxShadow = 'none';
+    }
   }
 
   const editHandler = (): void => {
@@ -62,8 +72,24 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
   }
 
   const saveUpdateHandler = async (): Promise<void> => {
-    await updateCard(boardId, columnId, cardId, {id: cardId, text, description });
-    await fetchBoard();
+    setBoardData((board: IBoard | null) => {
+      if (board) {
+        
+        const column = board.columnsData.find((col) => col.id === columnId);
+        
+        if (column) {
+          const cardIndex = column.items.findIndex((c) => c.id === cardId);
+
+          if (cardIndex !== -1) {
+            column.items[cardIndex] = { text, description, id: cardId };
+            return {...board};
+          }
+        }
+      }
+      return board;
+    });
+
+    updateCard(boardId, columnId, cardId, {id: cardId, text, description }, failFetchCallback);
 
     setEditing(false);
   }
@@ -75,8 +101,24 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
   }
 
   const deleteHandler = async (): Promise<void> => {
-    await deleteCard(boardId, columnId, cardId);
-    await fetchBoard();
+    setBoardData((board: IBoard | null) => {
+      if (board) {
+        
+        const column = board.columnsData.find((col) => col.id === columnId);
+        
+        if (column) {
+          const cardIndex = column.items.findIndex((c) => c.id === cardId);
+
+          if (cardIndex !== -1) {
+            column.items.splice(cardIndex, 1);
+            return {...board};
+          }
+        }
+      }
+      return board;
+    });
+
+    deleteCard(boardId, columnId, cardId, failFetchCallback);
   }
 
   const renderContent = () => isEditing ? (
@@ -119,6 +161,7 @@ export const Card = ({ card, column, boardId, fetchBoard, setCurrentColumn, setC
 
   return (
     <div
+      id={`${cardId}`}
       className={styles.card}
       draggable={!isEditing}
       onDragStart={(e) => dragStartHandler(e, column, card)}
